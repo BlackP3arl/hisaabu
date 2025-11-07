@@ -1,6 +1,12 @@
 import { ConfigProvider } from 'antd'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { Login } from './pages/Login'
+import { Register } from './pages/Register'
+import { PendingApproval } from './pages/PendingApproval'
+import { Dashboard } from './pages/Dashboard'
+import { AdminDashboard } from './pages/AdminDashboard'
+import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 
 // Create a client for React Query
@@ -12,11 +18,34 @@ function App() {
       <ConfigProvider>
         <Router>
           <Routes>
-            {/* Placeholder routes */}
-            <Route path="/" element={<div className="container"><h1>Hisaabu - Welcome</h1><p>Select a role to login</p></div>} />
-            <Route path="/admin" element={<div className="container"><h1>Platform Admin Dashboard</h1><p>Coming soon...</p></div>} />
-            <Route path="/tenant" element={<div className="container"><h1>Tenant Dashboard</h1><p>Coming soon...</p></div>} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Public routes */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/pending-approval" element={<PendingApproval />} />
+
+            {/* Protected company user routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute requiredUserType="company">
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected admin routes */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute requiredUserType="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Catch all */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Router>
       </ConfigProvider>
