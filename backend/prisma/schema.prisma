@@ -1,0 +1,414 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  admin
+  finance
+  sales
+  viewer
+}
+
+enum CompanyStatus {
+  pending
+  approved
+  suspended
+}
+
+enum CompanyPlan {
+  starter
+  pro
+}
+
+enum PlatformAdminRole {
+  super_admin
+  support
+}
+
+enum DocumentStatus {
+  draft
+  sent
+  accepted
+  rejected
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  partial
+  overdue
+  cancelled
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  SEND
+  DOWNLOAD
+  VIEW
+}
+
+// ============================================================================
+// PLATFORM
+// ============================================================================
+
+model PlatformAdmin {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  passwordHash String
+  role      PlatformAdminRole @default(super_admin)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  approvedCompanies Company[] @relation("ApprovedBy")
+
+  @@map("platform_admins")
+}
+
+// ============================================================================
+// COMPANIES & USERS (MULTI-TENANT)
+// ============================================================================
+
+model Company {
+  id                  String   @id @default(uuid())
+  name                String
+  email               String   @unique
+  phone               String?
+  website             String?
+  logoUrl             String?
+  address             Json?    // { street, city, state, zip, country }
+  gstTinNumber        String?
+  defaultCurrencyCode String   @default("USD")
+  socialLinks         Json?    // { facebook, instagram, linkedin, twitter }
+  bankAccounts        Json?    // Array of bank account objects
+
+  // Company profile customization
+  headerNote          String?  @db.Text
+  footerNote          String?  @db.Text
+  defaultTerms        String?  @db.Text
+  defaultInvoiceTerms String?  @db.Text
+  defaultQuotationTerms String? @db.Text
+
+  status              CompanyStatus @default(pending)
+  plan                CompanyPlan   @default(starter)
+
+  approvedById        String?
+  approvedAt          DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relationships
+  approvedBy          PlatformAdmin? @relation("ApprovedBy", fields: [approvedById], references: [id])
+  users               User[]
+  customers           Customer[]
+  products            Product[]
+  quotations          Quotation[]
+  invoices            Invoice[]
+  payments            Payment[]
+  auditLogs           AuditLog[]
+  sequences           Sequence[]
+
+  @@index([status])
+  @@index([plan])
+  @@map("companies")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  companyId     String
+  name          String
+  email         String
+  passwordHash  String
+  role          UserRole @default(viewer)
+  isActive      Boolean  @default(true)
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, email])
+  @@index([companyId])
+  @@map("users")
+}
+
+// ============================================================================
+// CUSTOMERS & PRODUCTS
+// ============================================================================
+
+model Customer {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  email       String?
+  phone       String?
+  address     Json?    // { street, city, state, zip, country }
+  gstTinNumber String?
+  website     String?
+  contactPerson String?
+  designation String?
+  notes       String?  @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  quotations  Quotation[]
+  invoices    Invoice[]
+
+  @@unique([companyId, email])
+  @@index([companyId])
+  @@index([name])
+  @@map("customers")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  description String?  @db.Text
+  sku         String?
+  unitPrice   Decimal  @db.Decimal(15, 2)
+  taxRate     Decimal  @default(0) @db.Decimal(5, 2)
+  category    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  quotationItems QuotationItem[]
+  invoiceItems   InvoiceItem[]
+
+  @@unique([companyId, sku])
+  @@index([companyId])
+  @@index([name])
+  @@map("products")
+}
+
+// ============================================================================
+// QUOTATIONS
+// ============================================================================
+
+model Quotation {
+  id                  String   @id @default(uuid())
+  companyId           String
+  customerId          String
+  quotationNumber     String
+  issueDate           DateTime
+  expiryDate          DateTime?
+  currencyCode        String   @default("USD")
+  status              DocumentStatus @default(draft)
+  notes               String?  @db.Text
+  terms               String?  @db.Text
+
+  // Calculated fields (denormalized for performance)
+  subtotal            Decimal  @default(0) @db.Decimal(15, 2)
+  taxAmount           Decimal  @default(0) @db.Decimal(15, 2)
+  discountAmount      Decimal  @default(0) @db.Decimal(15, 2)
+  totalAmount         Decimal  @default(0) @db.Decimal(15, 2)
+
+  sentAt              DateTime?
+  sentTo              String?  // Email address it was sent to
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relationships
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items               QuotationItem[]
+  convertedInvoice    Invoice? @relation("QuotationToInvoice")
+
+  @@unique([companyId, quotationNumber])
+  @@index([companyId])
+  @@index([customerId])
+  @@index([status])
+  @@index([issueDate])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id            String   @id @default(uuid())
+  quotationId   String
+  productId     String?
+  description   String
+  quantity      Decimal  @db.Decimal(10, 2)
+  unitPrice     Decimal  @db.Decimal(15, 2)
+  taxRate       Decimal  @default(0) @db.Decimal(5, 2)
+  lineTotal     Decimal  @db.Decimal(15, 2)
+  lineOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  quotation     Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product       Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([quotationId])
+  @@index([productId])
+  @@map("quotation_items")
+}
+
+// ============================================================================
+// INVOICES
+// ============================================================================
+
+model Invoice {
+  id                  String   @id @default(uuid())
+  companyId           String
+  customerId          String
+  invoiceNumber       String
+  quotationId         String?  @unique // Link to source quotation if converted (one-to-one)
+  issueDate           DateTime
+  dueDate             DateTime?
+  currencyCode        String   @default("USD")
+  status              DocumentStatus @default(draft)
+  notes               String?  @db.Text
+  terms               String?  @db.Text
+  referenceNumber     String?  // PO number or similar
+
+  // Calculated fields (denormalized for performance)
+  subtotal            Decimal  @default(0) @db.Decimal(15, 2)
+  taxAmount           Decimal  @default(0) @db.Decimal(15, 2)
+  discountAmount      Decimal  @default(0) @db.Decimal(15, 2)
+  totalAmount         Decimal  @default(0) @db.Decimal(15, 2)
+  paidAmount          Decimal  @default(0) @db.Decimal(15, 2)
+  balanceAmount       Decimal  @default(0) @db.Decimal(15, 2)
+
+  sentAt              DateTime?
+  sentTo              String?  // Email address it was sent to
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relationships
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items               InvoiceItem[]
+  payments            Payment[]
+  sourceQuotation     Quotation? @relation("QuotationToInvoice", fields: [quotationId], references: [id])
+
+  @@unique([companyId, invoiceNumber])
+  @@index([companyId])
+  @@index([customerId])
+  @@index([status])
+  @@index([issueDate])
+  @@index([dueDate])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id            String   @id @default(uuid())
+  invoiceId     String
+  productId     String?
+  description   String
+  quantity      Decimal  @db.Decimal(10, 2)
+  unitPrice     Decimal  @db.Decimal(15, 2)
+  taxRate       Decimal  @default(0) @db.Decimal(5, 2)
+  lineTotal     Decimal  @db.Decimal(15, 2)
+  lineOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product       Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+  @@index([productId])
+  @@map("invoice_items")
+}
+
+// ============================================================================
+// PAYMENTS
+// ============================================================================
+
+model Payment {
+  id            String   @id @default(uuid())
+  companyId     String
+  invoiceId     String
+  amount        Decimal  @db.Decimal(15, 2)
+  paymentDate   DateTime
+  paymentMethod String?  // cash, bank_transfer, cheque, card, etc.
+  referenceNumber String?  // Cheque number, transaction ID, etc.
+  notes         String?  @db.Text
+  status        PaymentStatus @default(pending)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([invoiceId])
+  @@index([paymentDate])
+  @@map("payments")
+}
+
+// ============================================================================
+// AUDIT LOGS
+// ============================================================================
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  companyId     String
+  userId        String?  // User who performed action, null for system actions
+  action        AuditAction
+  entity        String   // "Invoice", "Quotation", "Payment", etc.
+  entityId      String
+  changes       Json?    // Before/after values for UPDATE actions
+  ipAddress     String?
+  userAgent     String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  // Relationships
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================================================
+// SEQUENCES (For auto-incrementing document numbers)
+// ============================================================================
+
+model Sequence {
+  id            String   @id @default(uuid())
+  companyId     String   @unique
+  invoicePrefix String   @default("INV")
+  invoiceSuffix String   @default("")
+  invoiceNumber Int      @default(1)
+  quotationPrefix String  @default("QT")
+  quotationSuffix String  @default("")
+  quotationNumber Int     @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@map("sequences")
+}

@@ -1,0 +1,144 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.container h1 {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.container p {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2rem;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Error state */
+.error {
+  padding: 1rem;
+  background-color: #ff4d4f;
+  color: white;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+/* Success state */
+.success {
+  padding: 1rem;
+  background-color: #52c41a;
+  color: white;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #fafafa;
+  color: #000;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #1890ff;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Button styles */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #1890ff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0050b3;
+}
+
+.btn-secondary {
+  background-color: #d9d9d9;
+  color: #000;
+}
+
+.btn-secondary:hover {
+  background-color: #bfbfbf;
+}
+
+/* Table styles */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.table thead {
+  background-color: #fafafa;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .container h1 {
+    font-size: 1.5rem;
+  }
+
+  .container p {
+    font-size: 1rem;
+  }
+}
