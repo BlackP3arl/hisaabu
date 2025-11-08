@@ -29,8 +29,10 @@ export const CompanyProfile = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [logoFile, setLogoFile] = useState<UploadFile | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string>('');
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [logoKey, setLogoKey] = useState<number>(0);
+  const [loadingLogo, setLoadingLogo] = useState(false);
 
   const {
     profile,
@@ -100,6 +102,37 @@ export const CompanyProfile = () => {
       message.error('Failed to upload logo');
     }
     return false;
+  };
+
+  const handleLogoUrlUpdate = async () => {
+    if (!logoUrl.trim()) {
+      message.error('Please enter a valid URL');
+      return;
+    }
+
+    // Basic URL validation
+    try {
+      new URL(logoUrl);
+    } catch {
+      message.error('Please enter a valid URL');
+      return;
+    }
+
+    setLoadingLogo(true);
+    try {
+      // Add cache-busting parameter
+      const urlWithCache = `${logoUrl}?t=${Date.now()}`;
+      await updateProfile({ logoUrl: urlWithCache });
+      message.success('Logo URL updated successfully');
+      setLogoUrl('');
+      setLogoKey(prev => prev + 1);
+      await fetchProfile();
+    } catch (error) {
+      console.error('Logo URL update error:', error);
+      message.error('Failed to update logo URL');
+    } finally {
+      setLoadingLogo(false);
+    }
   };
 
   const handleSubmit = async (values: any) => {
@@ -213,13 +246,37 @@ export const CompanyProfile = () => {
               ) : (
                 <div style={{ color: '#999', padding: '20px' }}>No logo uploaded yet</div>
               )}
-              <Upload
-                beforeUpload={handleLogoUpload}
-                accept="image/*"
-                maxCount={1}
-              >
-                <Button icon={<UploadOutlined />}>Upload Logo</Button>
-              </Upload>
+
+              <Divider style={{ margin: '12px 0' }} />
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <Upload
+                  beforeUpload={handleLogoUpload}
+                  accept="image/*"
+                  maxCount={1}
+                >
+                  <Button icon={<UploadOutlined />}>Upload Image</Button>
+                </Upload>
+                <span style={{ color: '#999' }}>or</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                <Input
+                  placeholder="Enter logo URL (https://example.com/logo.png)"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  onPressEnter={handleLogoUrlUpdate}
+                  disabled={loadingLogo}
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  type="primary"
+                  onClick={handleLogoUrlUpdate}
+                  loading={loadingLogo}
+                >
+                  Set URL
+                </Button>
+              </div>
             </Space>
           </Card>
 
