@@ -54,11 +54,19 @@ export const Dashboard: React.FC = () => {
           <Col xs={24} sm={12} md={6}>
             <Card style={{ textAlign: 'center' }}>
               {profile?.logoUrl ? (
-                <Avatar
-                  size={120}
-                  src={profile.logoUrl}
-                  style={{ backgroundColor: '#f0f0f0', marginBottom: '16px' }}
-                />
+                <div style={{ marginBottom: '16px' }}>
+                  <img
+                    src={profile.logoUrl}
+                    alt="Company Logo"
+                    style={{
+                      width: '120px',
+                      height: '120px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid #f0f0f0'
+                    }}
+                  />
+                </div>
               ) : (
                 <Avatar
                   size={120}

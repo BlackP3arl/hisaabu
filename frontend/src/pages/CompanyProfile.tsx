@@ -190,13 +190,28 @@ export const CompanyProfile = () => {
           {/* Logo Section */}
           <Card type="inner" title="Company Logo" style={{ marginBottom: '24px' }}>
             <Space direction="vertical" style={{ width: '100%' }} size="large">
-              {profile?.logoUrl && (
-                <Avatar
-                  key={logoKey}
-                  size={120}
-                  src={profile.logoUrl}
-                  style={{ backgroundColor: '#f0f0f0' }}
-                />
+              {profile?.logoUrl ? (
+                <div key={logoKey}>
+                  <img
+                    src={profile.logoUrl}
+                    alt="Company Logo"
+                    style={{
+                      maxWidth: '200px',
+                      maxHeight: '200px',
+                      borderRadius: '4px',
+                      border: '1px solid #d9d9d9'
+                    }}
+                    onError={(e) => {
+                      console.error('Image failed to load:', profile.logoUrl);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                    onLoad={() => {
+                      console.log('Image loaded successfully:', profile.logoUrl);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div style={{ color: '#999', padding: '20px' }}>No logo uploaded yet</div>
               )}
               <Upload
                 beforeUpload={handleLogoUpload}
