@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import platformAdminRoutes from './platformAdmin.routes';
 import authRoutes from './auth.routes';
+import companyRoutes from './company.routes';
 
 const router = Router();
 
@@ -22,5 +23,13 @@ router.use('/admin/auth', platformAdminRoutes);
  * GET /api/auth/me
  */
 router.use('/auth', authRoutes);
+
+/**
+ * Company Profile Routes
+ * GET /api/company/profile
+ * PUT /api/company/profile
+ * POST /api/company/logo
+ */
+router.use('/company', companyRoutes);
 
 export default router;

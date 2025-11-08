@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { UserRole, PlatformAdminRole } from '@prisma/client';
+import { Express } from 'express-serve-static-core';
 
 /**
  * JWT Token Types
@@ -55,6 +56,7 @@ export interface CompanyData {
 export interface AuthRequest extends Request {
   user?: AccessTokenPayload;
   companyId?: string;
+  file?: Express.Multer.File;
 }
 
 export interface AuthResponse {

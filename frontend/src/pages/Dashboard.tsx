@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Row, Col, Statistic, Layout, Menu } from 'antd';
-import { LogoutOutlined, UserOutlined, ShopOutlined } from '@ant-design/icons';
+import { Card, Button, Row, Col, Statistic, Layout, Menu, Space } from 'antd';
+import { LogoutOutlined, UserOutlined, ShopOutlined, SettingOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store/auth.store';
 
 const { Header, Content } = Layout;
@@ -22,14 +22,23 @@ export const Dashboard: React.FC = () => {
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#667eea' }}>
             Hisaabu - {company?.name}
           </div>
-          <Button
-            type="text"
-            danger
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
+          <Space>
+            <Button
+              type="text"
+              icon={<SettingOutlined />}
+              onClick={() => navigate('/company/profile')}
+            >
+              Company Settings
+            </Button>
+            <Button
+              type="text"
+              danger
+              icon={<LogoutOutlined />}
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </Space>
         </div>
       </Header>
 

@@ -96,3 +96,43 @@ export const validateData = <T>(schema: z.ZodSchema, data: unknown): { valid: bo
     return { valid: false, error: 'Validation failed' };
   }
 };
+
+/**
+ * Company profile update schema
+ */
+export const updateCompanyProfileSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  email: emailSchema.optional(),
+  phone: z.string().optional(),
+  website: z.string().url().optional().or(z.literal('')),
+  gstTinNumber: z.string().optional(),
+  defaultCurrencyCode: z.string().length(3).optional(),
+  logoUrl: z.string().url().optional().or(z.literal('')),
+  headerNote: z.string().optional(),
+  footerNote: z.string().optional(),
+  defaultTerms: z.string().optional(),
+  defaultInvoiceTerms: z.string().optional(),
+  defaultQuotationTerms: z.string().optional(),
+  address: z.object({
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zip: z.string().optional(),
+    country: z.string().optional(),
+  }).optional(),
+  socialLinks: z.object({
+    facebook: z.string().optional(),
+    instagram: z.string().optional(),
+    linkedin: z.string().optional(),
+    twitter: z.string().optional(),
+  }).optional(),
+  bankAccounts: z.array(z.object({
+    bankName: z.string(),
+    accountHolder: z.string(),
+    accountNumber: z.string(),
+    ifscCode: z.string(),
+    branchName: z.string().optional(),
+  })).optional(),
+});
+
+export type UpdateCompanyProfileInput = z.infer<typeof updateCompanyProfileSchema>;

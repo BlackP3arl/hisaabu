@@ -6,6 +6,7 @@ import { Register } from './pages/Register'
 import { PendingApproval } from './pages/PendingApproval'
 import { Dashboard } from './pages/Dashboard'
 import { AdminDashboard } from './pages/AdminDashboard'
+import { CompanyProfile } from './pages/CompanyProfile'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 
@@ -30,6 +31,14 @@ function App() {
               element={
                 <ProtectedRoute requiredUserType="company">
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/company/profile"
+              element={
+                <ProtectedRoute requiredUserType="company">
+                  <CompanyProfile />
                 </ProtectedRoute>
               }
             />
