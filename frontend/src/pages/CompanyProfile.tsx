@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   Form,
@@ -11,7 +12,7 @@ import {
   Avatar,
   Space,
 } from 'antd';
-import { UploadOutlined, SaveOutlined } from '@ant-design/icons';
+import { UploadOutlined, SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useCompanyStore } from '../store/company.store';
 import '../styles/auth.css';
@@ -25,9 +26,11 @@ interface BankAccount {
 }
 
 export const CompanyProfile = () => {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [logoFile, setLogoFile] = useState<UploadFile | null>(null);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [logoKey, setLogoKey] = useState<number>(0);
 
   const {
     profile,
@@ -86,6 +89,8 @@ export const CompanyProfile = () => {
         await uploadLogo(file.originFileObj);
         message.success('Logo uploaded successfully');
         setLogoFile(null);
+        // Force re-render of Avatar by incrementing key
+        setLogoKey(prev => prev + 1);
         return false; // Prevent default upload behavior
       }
     } catch {
@@ -160,7 +165,18 @@ export const CompanyProfile = () => {
 
   return (
     <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto' }}>
-      <Card title="Company Profile">
+      <Card
+        title="Company Profile"
+        extra={
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate('/dashboard')}
+            type="default"
+          >
+            Back to Dashboard
+          </Button>
+        }
+      >
         {error && (
           <div style={{ color: '#ff4d4f', marginBottom: '16px', padding: '12px', backgroundColor: '#fff1f0', borderRadius: '4px' }}>
             {error}
@@ -173,6 +189,7 @@ export const CompanyProfile = () => {
             <Space direction="vertical" style={{ width: '100%' }} size="large">
               {profile?.logoUrl && (
                 <Avatar
+                  key={logoKey}
                   size={120}
                   src={profile.logoUrl}
                   style={{ backgroundColor: '#f0f0f0' }}
