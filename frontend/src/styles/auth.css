@@ -178,3 +178,12 @@
 .auth-card :global(.ant-form-item-explain-error) {
   color: #ff4d4f;
 }
+
+/* Hidden form step - keep in DOM but invisible for form submission */
+.hidden-step {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

@@ -113,8 +113,15 @@ export const useAuthStore = create<AuthState>((set, get) => {
         if (response.data.success && response.data.data) {
           return response.data.data;
         } else {
-          throw new Error(response.data.error || 'Registration failed');
+          const error = new Error(response.data.error || 'Registration failed') as any;
+          error.response = response;
+          throw error;
         }
+      } catch (error: any) {
+        const errorMsg = error.response?.data?.error || error.message || 'Registration failed';
+        const err = new Error(errorMsg) as any;
+        err.response = error.response;
+        throw err;
       } finally {
         set({ isLoading: false });
       }

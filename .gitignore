@@ -46,6 +46,9 @@ uploads/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+frontend/test-results/
+frontend/playwright-report/
+frontend/*.png
 
 #testting credentials
 Platform Admin: admin@techverin.com / admin123

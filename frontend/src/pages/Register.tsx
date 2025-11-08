@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Card, message, Steps } from 'antd';
+import { Form, Input, Button, Card, message, Steps, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, ShopOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store/auth.store';
 import '../styles/auth.css';
@@ -11,36 +11,101 @@ export const Register: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const { isLoading, registerCompany } = useAuthStore();
 
-  const handleRegister = async (values: any) => {
+  // Store form values in state to persist across steps
+  const [formData, setFormData] = useState({
+    companyName: '',
+    companyEmail: '',
+    phone: '',
+    gstTinNumber: '',
+    currency: 'INR',
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    termsAccepted: false,
+  });
+
+  const handleNext = async () => {
     try {
+      // Validate current step fields
+      let fieldsToValidate: string[] = [];
+
+      if (currentStep === 0) {
+        fieldsToValidate = ['companyName', 'companyEmail', 'phone'];
+      } else if (currentStep === 1) {
+        fieldsToValidate = ['fullName', 'email', 'password', 'confirmPassword', 'termsAccepted'];
+      }
+
+      await form.validateFields(fieldsToValidate);
+      // Save form data before moving to next step
+      const values = form.getFieldsValue(fieldsToValidate);
+      setFormData({ ...formData, ...values });
+      setCurrentStep(currentStep + 1);
+    } catch (error) {
+      // Validation failed, don't move forward
+    }
+  };
+
+  const handleBack = () => {
+    // Save current step data before going back
+    if (currentStep === 1) {
+      const values = form.getFieldsValue(['companyName', 'companyEmail', 'phone']);
+      setFormData({ ...formData, ...values });
+    } else if (currentStep === 2) {
+      const values = form.getFieldsValue(['fullName', 'email', 'password', 'confirmPassword', 'termsAccepted']);
+      setFormData({ ...formData, ...values });
+    }
+    setCurrentStep(currentStep - 1);
+  };
+
+  const handleRegister = async () => {
+    try {
+      // Validate all current step fields before submission
+      let fieldsToValidate: string[] = [];
+      if (currentStep === 1) {
+        fieldsToValidate = ['fullName', 'email', 'password', 'confirmPassword', 'termsAccepted'];
+      } else if (currentStep === 2) {
+        // No fields to validate on review step
+        fieldsToValidate = [];
+      }
+
+      if (fieldsToValidate.length > 0) {
+        await form.validateFields(fieldsToValidate);
+        const values = form.getFieldsValue(fieldsToValidate);
+        setFormData({ ...formData, ...values });
+      }
+
+      // Use stored formData which has all values from all steps
       const payload = {
         company: {
-          name: values.companyName,
-          email: values.companyEmail,
-          phone: values.phone,
-          gstTinNumber: values.gstTinNumber || '',
-          defaultCurrencyCode: values.currency || 'INR',
+          name: formData.companyName,
+          email: formData.companyEmail,
+          phone: formData.phone || '',
+          gstTinNumber: formData.gstTinNumber || '',
+          defaultCurrencyCode: formData.currency || 'INR',
         },
         user: {
-          name: values.fullName,
-          email: values.email,
-          password: values.password,
+          name: formData.fullName,
+          email: formData.email,
+          password: formData.password,
         },
       };
 
+      console.log('📤 Sending payload to backend:', JSON.stringify(payload, null, 2));
       const result = await registerCompany(payload);
       message.success(
         'Company registered successfully! Waiting for admin approval. You will receive an email notification.'
       );
 
-      // Show company and user IDs
-      console.log('Registration successful:', result);
+      console.log('✅ Registration successful:', result);
 
       navigate('/pending-approval', {
-        state: { companyId: result.companyId, email: values.email },
+        state: { companyId: result.companyId, email: formData.email },
       });
     } catch (error: any) {
-      message.error(error.response?.data?.error || 'Registration failed');
+      const errorMessage = error.response?.data?.error || error.message || 'Registration failed';
+      console.error('❌ Registration error:', error);
+      message.error(errorMessage);
     }
   };
 
@@ -59,16 +124,17 @@ export const Register: React.FC = () => {
 
         <Form
           form={form}
-          onFinish={handleRegister}
           layout="vertical"
           requiredMark={false}
         >
+          {/* STEP 0: Company Information */}
           {currentStep === 0 && (
             <>
               <Form.Item
                 name="companyName"
                 label="Company Name"
                 rules={[{ required: true, message: 'Please enter company name' }]}
+                initialValue={formData.companyName}
               >
                 <Input
                   prefix={<ShopOutlined />}
@@ -84,6 +150,7 @@ export const Register: React.FC = () => {
                   { required: true, message: 'Please enter company email' },
                   { type: 'email', message: 'Please enter a valid email' },
                 ]}
+                initialValue={formData.companyEmail}
               >
                 <Input
                   prefix={<MailOutlined />}
@@ -96,6 +163,7 @@ export const Register: React.FC = () => {
                 name="phone"
                 label="Phone"
                 rules={[{ required: true, message: 'Please enter phone number' }]}
+                initialValue={formData.phone}
               >
                 <Input
                   placeholder="+91 1234567890"
@@ -106,6 +174,7 @@ export const Register: React.FC = () => {
               <Form.Item
                 name="gstTinNumber"
                 label="GST/TIN Number"
+                initialValue={formData.gstTinNumber}
               >
                 <Input
                   placeholder="27AABCT1234A1Z0"
@@ -116,7 +185,7 @@ export const Register: React.FC = () => {
               <Form.Item
                 name="currency"
                 label="Default Currency"
-                initialValue="INR"
+                initialValue={formData.currency}
               >
                 <Input
                   placeholder="INR"
@@ -126,12 +195,14 @@ export const Register: React.FC = () => {
             </>
           )}
 
+          {/* STEP 1: Account Information */}
           {currentStep === 1 && (
             <>
               <Form.Item
                 name="fullName"
                 label="Full Name"
                 rules={[{ required: true, message: 'Please enter your full name' }]}
+                initialValue={formData.fullName}
               >
                 <Input
                   prefix={<UserOutlined />}
@@ -147,6 +218,7 @@ export const Register: React.FC = () => {
                   { required: true, message: 'Please enter your email' },
                   { type: 'email', message: 'Please enter a valid email' },
                 ]}
+                initialValue={formData.email}
               >
                 <Input
                   prefix={<MailOutlined />}
@@ -169,6 +241,7 @@ export const Register: React.FC = () => {
                     message: 'Password must include uppercase, lowercase, and number',
                   },
                 ]}
+                initialValue={formData.password}
               >
                 <Input.Password
                   prefix={<LockOutlined />}
@@ -183,15 +256,18 @@ export const Register: React.FC = () => {
                 dependencies={['password']}
                 rules={[
                   { required: true, message: 'Please confirm your password' },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue('password') === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(new Error('Passwords do not match'));
-                    },
-                  }),
+                  ({ getFieldValue }) => (
+                    {
+                      validator(_, value) {
+                        if (!value || getFieldValue('password') === value) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(new Error('Passwords do not match'));
+                      },
+                    }
+                  ),
                 ]}
+                initialValue={formData.confirmPassword}
               >
                 <Input.Password
                   prefix={<LockOutlined />}
@@ -211,33 +287,34 @@ export const Register: React.FC = () => {
                     },
                   },
                 ]}
+                initialValue={formData.termsAccepted}
               >
-                <input type="checkbox" />
-                <span style={{ marginLeft: '8px' }}>
+                <Checkbox>
                   I accept the <a href="/terms">Terms and Conditions</a>
-                </span>
+                </Checkbox>
               </Form.Item>
             </>
           )}
 
+          {/* STEP 2: Review */}
           {currentStep === 2 && (
             <div className="review-section">
               <h3>Review Your Information</h3>
               <div className="review-item">
                 <strong>Company Name:</strong>
-                <p>{form.getFieldValue('companyName')}</p>
+                <p>{formData.companyName}</p>
               </div>
               <div className="review-item">
                 <strong>Company Email:</strong>
-                <p>{form.getFieldValue('companyEmail')}</p>
+                <p>{formData.companyEmail}</p>
               </div>
               <div className="review-item">
                 <strong>Admin Name:</strong>
-                <p>{form.getFieldValue('fullName')}</p>
+                <p>{formData.fullName}</p>
               </div>
               <div className="review-item">
                 <strong>Admin Email:</strong>
-                <p>{form.getFieldValue('email')}</p>
+                <p>{formData.email}</p>
               </div>
               <p style={{ marginTop: '20px', color: '#666' }}>
                 Click "Complete Registration" to submit your company for approval.
@@ -248,7 +325,7 @@ export const Register: React.FC = () => {
           <div className="form-actions">
             {currentStep > 0 && (
               <Button
-                onClick={() => setCurrentStep(currentStep - 1)}
+                onClick={handleBack}
                 size="large"
               >
                 Back
@@ -257,7 +334,7 @@ export const Register: React.FC = () => {
             {currentStep < 2 && (
               <Button
                 type="primary"
-                onClick={() => setCurrentStep(currentStep + 1)}
+                onClick={handleNext}
                 size="large"
               >
                 Next
@@ -266,9 +343,9 @@ export const Register: React.FC = () => {
             {currentStep === 2 && (
               <Button
                 type="primary"
-                htmlType="submit"
                 size="large"
                 loading={isLoading}
+                onClick={handleRegister}
               >
                 Complete Registration
               </Button>
