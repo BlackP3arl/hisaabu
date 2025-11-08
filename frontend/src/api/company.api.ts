@@ -1,6 +1,23 @@
 import axios from 'axios';
+import { useAuthStore } from '../store/auth.store';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
+
+// Create axios instance with interceptor for auth headers
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+// Add request interceptor to include auth token
+apiClient.interceptors.request.use((config) => {
+  const { accessToken } = useAuthStore.getState();
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
 export interface CompanyProfile {
   id: string;
@@ -80,7 +97,7 @@ export const companyApi = {
    * Get company profile
    */
   getProfile: async (): Promise<CompanyProfile> => {
-    const response = await axios.get(`${API_BASE_URL}/company/profile`);
+    const response = await apiClient.get('/company/profile');
     return response.data.data;
   },
 
@@ -88,7 +105,7 @@ export const companyApi = {
    * Update company profile
    */
   updateProfile: async (data: UpdateCompanyProfileData): Promise<CompanyProfile> => {
-    const response = await axios.put(`${API_BASE_URL}/company/profile`, data);
+    const response = await apiClient.put('/company/profile', data);
     return response.data.data;
   },
 
@@ -99,7 +116,7 @@ export const companyApi = {
     const formData = new FormData();
     formData.append('logo', file);
 
-    const response = await axios.post(`${API_BASE_URL}/company/logo`, formData, {
+    const response = await apiClient.post('/company/logo', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

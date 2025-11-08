@@ -96,38 +96,57 @@ export const CompanyProfile = () => {
 
   const handleSubmit = async (values: any) => {
     try {
-      const updateData = {
+      // Helper to check if object has any non-empty values
+      const hasAnyValue = (obj: any) =>
+        obj && Object.values(obj).some((v) => v !== null && v !== undefined && v !== '');
+
+      const updateData: any = {
         name: values.name,
         email: values.email,
         phone: values.phone,
-        website: values.website,
-        gstTinNumber: values.gstTinNumber,
+        website: values.website || undefined,
+        gstTinNumber: values.gstTinNumber || undefined,
         defaultCurrencyCode: values.defaultCurrencyCode,
-        headerNote: values.headerNote,
-        footerNote: values.footerNote,
-        defaultTerms: values.defaultTerms,
-        defaultInvoiceTerms: values.defaultInvoiceTerms,
-        defaultQuotationTerms: values.defaultQuotationTerms,
-        address: {
-          street: values.street,
-          city: values.city,
-          state: values.state,
-          zip: values.zip,
-          country: values.country,
-        },
-        socialLinks: {
-          facebook: values.facebook,
-          instagram: values.instagram,
-          linkedin: values.linkedin,
-          twitter: values.twitter,
-        },
-        bankAccounts: bankAccounts.length > 0 ? bankAccounts : undefined,
+        headerNote: values.headerNote || undefined,
+        footerNote: values.footerNote || undefined,
+        defaultTerms: values.defaultTerms || undefined,
+        defaultInvoiceTerms: values.defaultInvoiceTerms || undefined,
+        defaultQuotationTerms: values.defaultQuotationTerms || undefined,
       };
+
+      // Only add address if it has at least one value
+      const addressData = {
+        street: values.street,
+        city: values.city,
+        state: values.state,
+        zip: values.zip,
+        country: values.country,
+      };
+      if (hasAnyValue(addressData)) {
+        updateData.address = addressData;
+      }
+
+      // Only add social links if it has at least one value
+      const socialData = {
+        facebook: values.facebook,
+        instagram: values.instagram,
+        linkedin: values.linkedin,
+        twitter: values.twitter,
+      };
+      if (hasAnyValue(socialData)) {
+        updateData.socialLinks = socialData;
+      }
+
+      // Only add bank accounts if available
+      if (bankAccounts.length > 0) {
+        updateData.bankAccounts = bankAccounts;
+      }
 
       await updateProfile(updateData);
       message.success('Company profile updated successfully');
-    } catch {
-      message.error('Failed to update company profile');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Failed to update company profile';
+      message.error(errorMsg);
     }
   };
 
