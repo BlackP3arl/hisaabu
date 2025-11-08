@@ -46,8 +46,10 @@ export const useCompanyStore = create<CompanyStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const { logoUrl } = await companyApi.uploadLogo(file);
+      // Add cache-busting query parameter
+      const urlWithCache = `${logoUrl}?t=${Date.now()}`;
       set((state) => ({
-        profile: state.profile ? { ...state.profile, logoUrl } : null,
+        profile: state.profile ? { ...state.profile, logoUrl: urlWithCache } : null,
         loading: false,
       }));
     } catch (error) {

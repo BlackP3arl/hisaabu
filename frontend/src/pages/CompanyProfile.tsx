@@ -91,9 +91,12 @@ export const CompanyProfile = () => {
         setLogoFile(null);
         // Force re-render of Avatar by incrementing key
         setLogoKey(prev => prev + 1);
+        // Refetch profile to ensure latest data
+        await fetchProfile();
         return false; // Prevent default upload behavior
       }
-    } catch {
+    } catch (error) {
+      console.error('Logo upload error:', error);
       message.error('Failed to upload logo');
     }
     return false;
