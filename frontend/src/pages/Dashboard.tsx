@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Row, Col, Statistic, Layout, Menu, Space } from 'antd';
+import { Card, Button, Row, Col, Statistic, Layout, Menu, Space, Avatar } from 'antd';
 import { LogoutOutlined, UserOutlined, ShopOutlined, SettingOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store/auth.store';
+import { useCompanyStore } from '../store/company.store';
 
 const { Header, Content } = Layout;
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, company, logout } = useAuthStore();
+  const { profile, fetchProfile } = useCompanyStore();
+
+  // Fetch company profile on mount
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleLogout = () => {
     logout();
@@ -44,6 +51,25 @@ export const Dashboard: React.FC = () => {
 
       <Content style={{ padding: '24px' }}>
         <Row gutter={[24, 24]}>
+          <Col xs={24} sm={12} md={6}>
+            <Card style={{ textAlign: 'center' }}>
+              {profile?.logoUrl ? (
+                <Avatar
+                  size={120}
+                  src={profile.logoUrl}
+                  style={{ backgroundColor: '#f0f0f0', marginBottom: '16px' }}
+                />
+              ) : (
+                <Avatar
+                  size={120}
+                  icon={<ShopOutlined />}
+                  style={{ backgroundColor: '#667eea', marginBottom: '16px' }}
+                />
+              )}
+              <h3 style={{ margin: '12px 0 0 0' }}>{company?.name}</h3>
+            </Card>
+          </Col>
+
           <Col span={24}>
             <Card>
               <h2>Welcome, {user?.name}!</h2>
