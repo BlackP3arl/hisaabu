@@ -176,10 +176,61 @@ npm run build           # Build for production
 
 See [PHASE1_COMPLETION.md](PHASE1_COMPLETION.md) for detailed Phase 1 status and [README.md](README.md) for full documentation.
 
-### Phase 4: Core Entities
-- [ ] Customers CRUD
-- [ ] Products CRUD
-- [ ] Test each entity individually
+### Phase 4: Core Entities ✅ (COMPLETE - Nov 9, 2025)
+- [x] Customers CRUD
+- [x] Products CRUD
+- [x] Test each entity individually
+
+**Implementation Details:**
+
+**Backend:**
+- CustomerService with full CRUD operations
+- ProductService with full CRUD operations
+- Email uniqueness validation for customers
+- SKU uniqueness validation for products
+- Multi-tenant isolation via company_id
+- Comprehensive Zod validation schemas
+- Proper error handling with AppError
+
+**Frontend:**
+- Customers page with table, add, edit, delete functionality
+- Products page with table, add, edit, delete functionality
+- Zustand stores for state management
+- Ant Design components for professional UI
+- Modal forms with validation
+- Auto-injected JWT tokens via Axios interceptor
+- Loading states and error handling
+
+**Endpoints Implemented:**
+```
+Customers:
+  GET /api/customers - Get all customers
+  GET /api/customers/:id - Get specific customer
+  POST /api/customers - Create new customer
+  PUT /api/customers/:id - Update customer
+  DELETE /api/customers/:id - Delete customer
+
+Products:
+  GET /api/products - Get all products
+  GET /api/products/:id - Get specific product
+  POST /api/products - Create new product
+  PUT /api/products/:id - Update product
+  DELETE /api/products/:id - Delete product
+```
+
+**Features:**
+- Complete CRUD operations for both entities
+- Email and SKU uniqueness checks
+- Form validation (frontend + backend)
+- Multi-tenancy support (automatic company_id isolation)
+- Address fields for customers (street, city, state, zip, country)
+- Product pricing and tax rate support
+- Active/inactive status for both entities
+- Responsive table UI with pagination
+- Modal forms for add/edit operations
+- Delete confirmation dialogs
+- Loading spinners and error messages
+- Dashboard navigation buttons for quick access
 
 ### Phase 5: Quotations
 - [ ] Create quotation
