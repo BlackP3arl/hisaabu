@@ -7,6 +7,8 @@ import { PendingApproval } from './pages/PendingApproval'
 import { Dashboard } from './pages/Dashboard'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { CompanyProfile } from './pages/CompanyProfile'
+import { Customers } from './pages/Customers'
+import { Products } from './pages/Products'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 
@@ -39,6 +41,22 @@ function App() {
               element={
                 <ProtectedRoute requiredUserType="company">
                   <CompanyProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/customers"
+              element={
+                <ProtectedRoute requiredUserType="company">
+                  <Customers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <ProtectedRoute requiredUserType="company">
+                  <Products />
                 </ProtectedRoute>
               }
             />

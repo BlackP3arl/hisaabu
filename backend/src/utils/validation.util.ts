@@ -136,3 +136,54 @@ export const updateCompanyProfileSchema = z.object({
 });
 
 export type UpdateCompanyProfileInput = z.infer<typeof updateCompanyProfileSchema>;
+
+/**
+ * Customer create schema
+ */
+export const createCustomerSchema = z.object({
+  name: z.string().min(2, 'Customer name must be at least 2 characters').max(100),
+  email: emailSchema.optional(),
+  phone: z.string().optional(),
+  website: z.string().url().optional().or(z.literal('')),
+  gstTinNumber: z.string().optional(),
+  contactPerson: z.string().optional(),
+  designation: z.string().optional(),
+  notes: z.string().optional(),
+  address: z.object({
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zip: z.string().optional(),
+    country: z.string().optional(),
+  }).optional(),
+  isActive: z.boolean().default(true),
+});
+
+export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
+
+/**
+ * Customer update schema
+ */
+export const updateCustomerSchema = createCustomerSchema.partial();
+export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+
+/**
+ * Product create schema
+ */
+export const createProductSchema = z.object({
+  name: z.string().min(2, 'Product name must be at least 2 characters').max(100),
+  description: z.string().optional(),
+  sku: z.string().optional(),
+  unitPrice: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Unit price must be a valid decimal number').or(z.number()),
+  taxRate: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Tax rate must be a valid decimal number').or(z.number()).optional(),
+  category: z.string().optional(),
+  isActive: z.boolean().default(true),
+});
+
+export type CreateProductInput = z.infer<typeof createProductSchema>;
+
+/**
+ * Product update schema
+ */
+export const updateProductSchema = createProductSchema.partial();
+export type UpdateProductInput = z.infer<typeof updateProductSchema>;

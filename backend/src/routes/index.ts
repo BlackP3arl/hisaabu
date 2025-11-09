@@ -2,6 +2,8 @@ import { Router } from 'express';
 import platformAdminRoutes from './platformAdmin.routes';
 import authRoutes from './auth.routes';
 import companyRoutes from './company.routes';
+import customerRoutes from './customer.routes';
+import productRoutes from './product.routes';
 
 const router = Router();
 
@@ -31,5 +33,25 @@ router.use('/auth', authRoutes);
  * POST /api/company/logo
  */
 router.use('/company', companyRoutes);
+
+/**
+ * Customer Routes
+ * GET /api/customers
+ * GET /api/customers/:id
+ * POST /api/customers
+ * PUT /api/customers/:id
+ * DELETE /api/customers/:id
+ */
+router.use('/customers', customerRoutes);
+
+/**
+ * Product Routes
+ * GET /api/products
+ * GET /api/products/:id
+ * POST /api/products
+ * PUT /api/products/:id
+ * DELETE /api/products/:id
+ */
+router.use('/products', productRoutes);
 
 export default router;

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Row, Col, Statistic, Layout, Menu, Space, Avatar } from 'antd';
-import { LogoutOutlined, UserOutlined, ShopOutlined, SettingOutlined } from '@ant-design/icons';
+import { LogoutOutlined, UserOutlined, ShopOutlined, SettingOutlined, UserOutlined as UsersOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store/auth.store';
 import { useCompanyStore } from '../store/company.store';
 
@@ -30,6 +30,20 @@ export const Dashboard: React.FC = () => {
             Hisaabu - {company?.name}
           </div>
           <Space>
+            <Button
+              type="text"
+              icon={<UsersOutlined />}
+              onClick={() => navigate('/customers')}
+            >
+              Customers
+            </Button>
+            <Button
+              type="text"
+              icon={<AppstoreOutlined />}
+              onClick={() => navigate('/products')}
+            >
+              Products
+            </Button>
             <Button
               type="text"
               icon={<SettingOutlined />}
