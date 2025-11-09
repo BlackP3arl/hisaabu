@@ -23,6 +23,10 @@ export const useCompanyStore = create<CompanyStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const profile = await companyApi.getProfile();
+      // Add cache-busting to logoUrl if it exists
+      if (profile.logoUrl) {
+        profile.logoUrl = `${profile.logoUrl}?t=${Date.now()}`;
+      }
       set({ profile, loading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to fetch profile';
@@ -33,10 +37,18 @@ export const useCompanyStore = create<CompanyStore>((set) => ({
   updateProfile: async (data: UpdateCompanyProfileData) => {
     set({ loading: true, error: null });
     try {
+      console.log('Store: Calling updateProfile API with data:', data);
       const updated = await companyApi.updateProfile(data);
+      console.log('Store: Received updated profile:', updated);
+      // Add cache-busting to logoUrl if it exists
+      if (updated.logoUrl) {
+        updated.logoUrl = `${updated.logoUrl}?t=${Date.now()}`;
+      }
       set({ profile: updated, loading: false });
+      console.log('Store: Profile state updated');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update profile';
+      console.error('Store: Update failed:', error);
       set({ error: message, loading: false });
       throw error;
     }

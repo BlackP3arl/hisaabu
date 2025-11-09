@@ -88,13 +88,14 @@ export const CompanyProfile = () => {
   const handleLogoUpload = async (file: UploadFile) => {
     try {
       if (file.originFileObj) {
+        console.log('Starting logo upload...');
         await uploadLogo(file.originFileObj);
+        console.log('✅ Logo uploaded, store updated');
         message.success('Logo uploaded successfully');
         setLogoFile(null);
-        // Force re-render of Avatar by incrementing key
+        // Force re-render of img by incrementing key
         setLogoKey(prev => prev + 1);
-        // Refetch profile to ensure latest data
-        await fetchProfile();
+        console.log('Logo image will refresh');
         return false; // Prevent default upload behavior
       }
     } catch (error) {
@@ -137,6 +138,9 @@ export const CompanyProfile = () => {
 
   const handleSubmit = async (values: any) => {
     try {
+      console.log('=== FORM SUBMISSION ===');
+      console.log('Form values received:', JSON.stringify(values, null, 2));
+
       // Helper to check if object has any non-empty values
       const hasAnyValue = (obj: any) =>
         obj && Object.values(obj).some((v) => v !== null && v !== undefined && v !== '');
@@ -183,9 +187,12 @@ export const CompanyProfile = () => {
         updateData.bankAccounts = bankAccounts;
       }
 
+      console.log('Sending update data:', JSON.stringify(updateData, null, 2));
       await updateProfile(updateData);
+      console.log('✅ Update successful');
       message.success('Company profile updated successfully');
     } catch (error) {
+      console.error('❌ Update failed:', error);
       const errorMsg = error instanceof Error ? error.message : 'Failed to update company profile';
       message.error(errorMsg);
     }
