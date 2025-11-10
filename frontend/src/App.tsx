@@ -9,6 +9,7 @@ import { AdminDashboard } from './pages/AdminDashboard'
 import { CompanyProfile } from './pages/CompanyProfile'
 import { Customers } from './pages/Customers'
 import { Products } from './pages/Products'
+import { AdminCompanies } from './pages/AdminCompanies'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css'
 
@@ -67,6 +68,14 @@ function App() {
               element={
                 <ProtectedRoute requiredUserType="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/companies"
+              element={
+                <ProtectedRoute requiredUserType="admin">
+                  <AdminCompanies />
                 </ProtectedRoute>
               }
             />

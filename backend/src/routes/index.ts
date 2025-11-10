@@ -4,6 +4,7 @@ import authRoutes from './auth.routes';
 import companyRoutes from './company.routes';
 import customerRoutes from './customer.routes';
 import productRoutes from './product.routes';
+import adminCompanyRoutes from './admin.company.routes';
 
 const router = Router();
 
@@ -53,5 +54,14 @@ router.use('/customers', customerRoutes);
  * DELETE /api/products/:id
  */
 router.use('/products', productRoutes);
+
+/**
+ * Admin Company Routes
+ * GET /api/admin/companies - Get all companies
+ * GET /api/admin/companies/:companyId - Get company detail
+ * PUT /api/admin/companies/:companyId/status - Update company status
+ * PUT /api/admin/companies/:companyId/plan - Update company plan
+ */
+router.use('/admin/companies', adminCompanyRoutes);
 
 export default router;

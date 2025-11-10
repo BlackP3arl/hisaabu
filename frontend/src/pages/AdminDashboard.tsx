@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Row, Col, Statistic, Layout } from 'antd';
-import { LogoutOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
+import { Card, Button, Row, Col, Statistic, Layout, Space } from 'antd';
+import { LogoutOutlined, UserOutlined, TeamOutlined, BuildOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store/auth.store';
 
 const { Header, Content } = Layout;
@@ -22,14 +22,23 @@ export const AdminDashboard: React.FC = () => {
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#667eea' }}>
             Hisaabu - Admin Panel
           </div>
-          <Button
-            type="text"
-            danger
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
+          <Space>
+            <Button
+              type="text"
+              icon={<BuildOutlined />}
+              onClick={() => navigate('/admin/companies')}
+            >
+              Manage Companies
+            </Button>
+            <Button
+              type="text"
+              danger
+              icon={<LogoutOutlined />}
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </Space>
         </div>
       </Header>
 
